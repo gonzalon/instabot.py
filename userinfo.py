@@ -128,8 +128,23 @@ class UserInfo:
                     return True
         return False
 
-    def get_stat(self, limit):
-        # todo
+    #Retrive the stats following this format:
+    # q_photos      = Quantity of photos
+    # q_followers   = Quantity of followers
+    # q_following   = Quantity of following
+    def get_stats(self):
+        self.stats = {}
+        if self.user_id:        
+            url = self.url_list[self.i_a]["search_id"] % self.user_id
+            profile = self.s.get(url)
+            r = json.loads(profile.text)
+            
+            counts = r["data"]["counts"]
+            self.stats["q_photos"] = counts["media"]
+            self.stats["q_followers"] = counts["followed_by"]
+            self.stats["q_following"] = counts["follows"]
+            return True
+        
         return False
 
 '''
@@ -148,4 +163,8 @@ print(ui.following)
 # get followers list with limit 10
 ui.get_followers(limit=10)
 print(ui.followers)
+
+# get the stats of the account
+ui.get_stats()
+print(ui.stats)
 '''
