@@ -134,7 +134,7 @@ class UserInfo:
     # q_following   = Quantity of following
     def get_stats(self):
         self.stats = {}
-        if self.user_id:        
+        if self.user_id:  
             url = self.url_list[self.i_a]["search_id"] % self.user_id
             profile = self.s.get(url)
             r = json.loads(profile.text)
@@ -146,6 +146,10 @@ class UserInfo:
             return True
         
         return False
+        
+    def get_stats_user(self, user_id=None, user_name=None):
+        self.search_user(user_id=user_id, user_name=user_name)
+        self.get_stats()
 
 '''
 # example
@@ -164,7 +168,11 @@ print(ui.following)
 ui.get_followers(limit=10)
 print(ui.followers)
 
-# get the stats of the account
+# get stats for the user
 ui.get_stats()
+print(ui.stats)
+
+# get stats by username or user id
+ui.get_stats_user(user_name="jenselter")
 print(ui.stats)
 '''
