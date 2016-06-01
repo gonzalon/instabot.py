@@ -72,7 +72,12 @@ class InstaBot:
 
     # For new_auto_mod
     next_iteration = {"Like": 0, "Follow": 0, "Unfollow": 0, "Comments": 0}
-
+    
+    # Default words for comments
+    default_words_for_comment = ["this", "the", "your"],["photo", "picture", "pic", "shot", "snapshot"],["is", "looks", "feels", "is really"],["great", "super", "good", "very good","good", "wow", "WOW", "cool","GREAT", "magnificent", "magical", "very cool","stylish", "so stylish", "beautiful","so beautiful", "so stylish", "so professional", "lovely", "so lovely", "very lovely","glorious", "so glorious", "very glorious","adorable", "excellent", "amazing"],[".", "..", "...", "!", "!!", "!!!"]
+    words_for_comment = None
+    
+    
     def __init__(self, login, password,
                 like_per_day=1000,
                 media_max_like=10,
@@ -424,8 +429,10 @@ class InstaBot:
     def new_auto_mod(self):
         while True:
             # ------------------- Get media_id -------------------
+            tag = None
             if len(self.media_by_tag) == 0:
-                self.get_media_id_by_tag(random.choice(self.tag_list))
+                tag = random.choice(self.tag_list)
+                self.get_media_id_by_tag(tag)
                 self.this_tag_like_count = 0
                 self.max_tag_like_count = random.randint(1, self.max_like_for_one_tag)
             # ------------------- Like -------------------
@@ -435,7 +442,7 @@ class InstaBot:
             # ------------------- Unfollow -------------------
             self.new_auto_mod_unfollow()
             # ------------------- Comment -------------------
-            self.new_auto_mod_comments()
+            self.new_auto_mod_comments(tag)
 
             # Bot iteration in 1 sec
             time.sleep(3)
@@ -483,11 +490,11 @@ class InstaBot:
                         self.next_iteration["Unfollow"] = time.time() +\
                                 self.add_time(self.unfollow_delay)
 
-    def new_auto_mod_comments(self):
+    def new_auto_mod_comments(self, tag):
         if time.time()>self.next_iteration["Comments"] and self.comments_per_day!=0 \
             and len(self.media_by_tag) > 0:
 
-            comment_text = self.generate_comment()
+            comment_text = self.generate_comment(tag)
             log_string = "Trying to comment: %s" % (self.media_by_tag[0]['id'])
             self.write_log(log_string)
             if self.comment(self.media_by_tag[0]['id'], comment_text) != False:
@@ -498,20 +505,23 @@ class InstaBot:
         """ Make some random for next iteration"""
         return time*0.9 + time*0.2*random.random()
 
-    def generate_comment(self):
-        c_list = list(itertools.product(
-                                    ["this", "the", "your"],
-                                    ["photo", "picture", "pic", "shot", "snapshot"],
-                                    ["is", "looks", "feels", "is really"],
-                                    ["great", "super", "good", "very good",
-                                    "good", "wow", "WOW", "cool",
-                                    "GREAT", "magnificent", "magical", "very cool",
-                                    "stylish", "so stylish", "beautiful",
-                                    "so beautiful", "so stylish", "so professional",
-                                    "lovely", "so lovely", "very lovely",
-                                    "glorious", "so glorious", "very glorious",
-                                    "adorable", "excellent", "amazing"],
-                                    [".", "..", "...", "!", "!!", "!!!"]))
+    def set_default_comment_values(self, default_comments):
+        self.default_words_for_comment = default_comments
+            
+    def set_tag_comment_values(self, tag_comments):
+        self.words_for_comment = tag_comments
+        
+    def generate_comment(self, tag):
+        tag_words = None
+        if words_for_comment is None:
+            tag_words = self.default_words_for_comment
+        else:
+            try:
+                tag_words = self.words_for_comment[tag]
+            except KeyError:
+                tag_words = self.default_words_for_comment
+        
+        c_list = list(itertools.product(*tag_words))
 
         repl = [("  ", " "), (" .", "."), (" !", "!")]
         res = " ".join(random.choice(c_list))
