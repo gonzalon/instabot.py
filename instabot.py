@@ -513,7 +513,7 @@ class InstaBot:
         
     def generate_comment(self, tag):
         tag_words = None
-        if words_for_comment is None:
+        if self.words_for_comment is None:
             tag_words = self.default_words_for_comment
         else:
             try:
